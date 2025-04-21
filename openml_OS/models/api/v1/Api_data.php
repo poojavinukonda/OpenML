@@ -509,7 +509,17 @@ class Api_data extends MY_Api_Model {
     $where_tag = $tag === null ? '' : ' AND `d`.`did` IN (select id from dataset_tag where tag="' . $tag . '") ';
     $where_did = $data_id === null ? '' : ' AND `d`.`did` IN ('. $data_id . ') ';
     $where_name = $name === null ? '' : ' AND `name` = "' . $name . '"';
-    $where_uploader = $uploader === null ? '' : ' AND `uploader` IN ("' . $uploader . '")';
+
+    #$where_uploader = $uploader === null ? '' : ' AND `uploader` IN ("' . $uploader . '")'; CHANGED - REPLACED THIS WITH TWO OPTIONS
+    # handles uploader ids separated by commas
+    # assumes uploader column in dataset table
+    $where_uploader = $uploader === null ? '' : ' AND `d`.`uploader` IN (' . implode(',', array_map('intval', explode(',', $uploader))) . ')';
+
+    # OR
+    # for same search functionality of tag (searh bar) for uploader userID as well?
+    $where_uploader = $uploader === null ? '' : ' AND `d`.`did` IN (select id from dataset_tag where uploader="' . $uploader . '") ';
+
+
     $where_version = $version === null ? '' : ' AND `version` = "' . $version . '" ';
     $where_insts = $nr_insts === null ? '' : ' AND `d`.`did` IN (select data from data_quality dq where quality="NumberOfInstances" and value ' . (strpos($nr_insts, '..') !== false ? 'BETWEEN ' . str_replace('..',' AND ',$nr_insts) : '= '. $nr_insts) . ') ';
     $where_feats = $nr_feats === null ? '' : ' AND `d`.`did` IN (select data from data_quality dq where quality="NumberOfFeatures" and value ' . (strpos($nr_feats, '..') !== false ? 'BETWEEN ' . str_replace('..',' AND ',$nr_feats) : '= '. $nr_feats) . ') ';
